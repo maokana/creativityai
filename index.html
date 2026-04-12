@@ -1,16 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AI Test</title>
+  <title>創造性実験AI</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<input id="input" placeholder="入力">
+<h1>創造性実験AI</h1>
 
-<button onclick="send()">送信</button>
+<p>課題を入力してください</p>
 
-<div id="output"></div>
+<textarea id="userInput" placeholder="例：日常の不便なこと"></textarea>
+
+<button onclick="submitData()">送信</button>
+
+<h2>結果</h2>
+<pre id="result"></pre>
 
 <script src="script.js"></script>
 
