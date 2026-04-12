@@ -11,5 +11,12 @@ async function send() {
 
   const data = await res.json();
 
+  // ★ここが重要
+  if (!res.ok) {
+    document.getElementById("output").innerText =
+      "エラー: " + (data.error || "不明なエラー");
+    return;
+  }
+
   document.getElementById("output").innerText = data.output;
 }
