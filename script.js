@@ -1,22 +1,35 @@
-async function send() {
-  const input = document.getElementById("input").value;
+async function submitData() {
+  const input = document.getElementById("userInput").value;
 
-  const res = await fetch("https://fancy-salad-35ac.kanachenliebe.workers.dev", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ input })
-  });
-
-  const data = await res.json();
-
-  // ★ここが重要
-  if (!res.ok) {
-    document.getElementById("output").innerText =
-      "エラー: " + (data.error || "不明なエラー");
+  // 入力チェック
+  if (!input) {
+    document.getElementById("result").innerText = "入力してください";
     return;
   }
 
-  document.getElementById("output").innerText = data.output;
+  try {
+    const res = await fetch("https://fancy-salad-35ac.kanachenliebe.workers.dev", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ input })
+    });
+
+    const data = await res.json();
+
+    // ★エラー処理（重要）
+    if (!res.ok) {
+      document.getElementById("result").innerText =
+        "エラー: " + (data.error || "サーバーエラー");
+      return;
+    }
+
+    // 成功時
+    document.getElementById("result").innerText = data.output;
+
+  } catch (err) {
+    document.getElementById("result").innerText =
+      "通信エラー: " + err.message;
+  }
 }
