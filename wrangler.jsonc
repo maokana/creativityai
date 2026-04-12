@@ -1,5 +1,13 @@
 {
-  "name": "wispy-poetry-3a5b",
+  "name": "fancy-salad-35ac",
   "main": "worker.js",
-  "compatibility_date": "2024-01-01"
+  "compatibility_date": "2024-01-01",
+
+  "d1_databases": [
+    {
+      "binding": "creativityai",
+      "database_name": "creativityai",
+      "database_id": "d3674350-1a80-43f8-ac4a-bc2282449005"
+    }
+  ]
 }
