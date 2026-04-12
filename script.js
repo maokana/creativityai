@@ -16,14 +16,25 @@ let hintText = "";
 // =========================
 async function startTest() {
 
-  const res = await fetch(`${WORKER_URL}/tasks`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${WORKER_URL}/tasks`);
 
-  task = data.task;
-  condition = data.condition;
+    if (!res.ok) {
+      throw new Error("tasks取得失敗");
+    }
 
-  document.getElementById("task").innerText = task;
-  document.getElementById("condition").innerText = condition;
+    const data = await res.json();
+
+    task = data.task;
+    condition = data.condition;
+
+    document.getElementById("task").innerText = task;
+    document.getElementById("condition").innerText = condition;
+
+  } catch (err) {
+    document.getElementById("task").innerText = "読み込みエラー";
+    console.error(err);
+  }
 
   startTimer();
 }
@@ -34,6 +45,7 @@ async function startTest() {
 function startTimer() {
 
   const timer = setInterval(() => {
+
     timeLeft--;
     document.getElementById("timer").innerText = timeLeft;
 
@@ -41,6 +53,7 @@ function startTimer() {
       clearInterval(timer);
       endTest();
     }
+
   }, 1000);
 }
 
@@ -58,6 +71,8 @@ async function submitAnswer() {
 
   const input = document.getElementById("input").value;
 
+  if (!input) return;
+
   // -------------------------
   // ① 初回回答 → ヒント取得
   // -------------------------
@@ -65,23 +80,34 @@ async function submitAnswer() {
 
     initialAnswer = input;
 
-    const res = await fetch(`${WORKER_URL}/hint`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input,
-        task,
-        condition
-      })
-    });
+    try {
+      const res = await fetch(`${WORKER_URL}/hint`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input,
+          task,
+          condition
+        })
+      });
 
-    const data = await res.json();
+      if (!res.ok) {
+        throw new Error("hint取得失敗");
+      }
 
-    hintText = data.hint;
+      const data = await res.json();
 
-    document.getElementById("hint").innerText = hintText;
+      hintText = data.hint;
 
-    phase = 1;
+      document.getElementById("hint").innerText = hintText;
+
+      phase = 1;
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("hint").innerText = "エラー：ヒント取得失敗";
+    }
+
     return;
   }
 
