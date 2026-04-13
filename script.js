@@ -6,11 +6,11 @@ let phase = 0;
 
 let timeLeft = 300;
 
-let initialAnswer = "";
-let finalAnswer = "";
 let hintText = "";
-let userId = "";
+let sessionId = "";
 
+// =========================
+// ■ 開始
 // =========================
 async function startTest() {
 
@@ -24,45 +24,37 @@ async function startTest() {
     document.getElementById("task").innerText = task;
     document.getElementById("condition").innerText = condition;
 
-  } catch (err) {
+  } catch (e) {
+    console.error(e);
     document.getElementById("task").innerText = "読み込みエラー";
-    console.error(err);
   }
 
   startTimer();
 }
 
 // =========================
+// ■ タイマー
+// =========================
 function startTimer() {
 
-  const timer = setInterval(() => {
-
+  setInterval(() => {
     timeLeft--;
     document.getElementById("timer").innerText = timeLeft;
-
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      endTest();
-    }
-
   }, 1000);
 }
 
 // =========================
-function endTest() {
-  document.body.innerHTML = "<h1>テスト終了です</h1>";
-}
-
+// ■ 送信
 // =========================
 async function submitAnswer() {
 
   const input = document.getElementById("input").value;
   if (!input) return;
 
-  // 初回 → ヒント取得
+  // -------------------------
+  // 初回：ヒント取得
+  // -------------------------
   if (phase === 0) {
-
-    initialAnswer = input;
 
     const res = await fetch(`${WORKER_URL}/hint`, {
       method: "POST",
@@ -79,7 +71,7 @@ async function submitAnswer() {
     const data = await res.json();
 
     hintText = data.hint;
-    userId = data.user_id;
+    sessionId = data.sessionId;
 
     document.getElementById("hint").innerText = hintText;
 
@@ -87,10 +79,12 @@ async function submitAnswer() {
     return;
   }
 
-  // 最終回答 → DB更新
+  // -------------------------
+  // 最終回答：UPDATE
+  // -------------------------
   if (phase === 1) {
 
-    finalAnswer = input;
+    const finalAnswer = input;
 
     document.getElementById("final").innerText = finalAnswer;
 
@@ -101,7 +95,7 @@ async function submitAnswer() {
       },
       body: JSON.stringify({
         finalAnswer,
-        userId
+        sessionId
       })
     });
 
