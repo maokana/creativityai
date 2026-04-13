@@ -9,19 +9,13 @@ let timeLeft = 300;
 let initialAnswer = "";
 let finalAnswer = "";
 let hintText = "";
+let userId = "";
 
-// =========================
-// ■ 実験開始
 // =========================
 async function startTest() {
 
   try {
     const res = await fetch(`${WORKER_URL}/tasks`);
-
-    if (!res.ok) {
-      throw new Error("tasks取得失敗");
-    }
-
     const data = await res.json();
 
     task = data.task;
@@ -32,14 +26,12 @@ async function startTest() {
 
   } catch (err) {
     document.getElementById("task").innerText = "読み込みエラー";
-    console.error("tasks error:", err);
+    console.error(err);
   }
 
   startTimer();
 }
 
-// =========================
-// ■ タイマー
 // =========================
 function startTimer() {
 
@@ -57,14 +49,10 @@ function startTimer() {
 }
 
 // =========================
-// ■ 終了画面
-// =========================
 function endTest() {
   document.body.innerHTML = "<h1>テスト終了です</h1>";
 }
 
-// =========================
-// ■ 回答送信
 // =========================
 async function submitAnswer() {
 
@@ -76,43 +64,47 @@ async function submitAnswer() {
 
     initialAnswer = input;
 
-    try {
-      const res = await fetch(`${WORKER_URL}/hint`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          input,
-          task,
-          condition
-        })
-      });
+    const res = await fetch(`${WORKER_URL}/hint`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        input,
+        task,
+        condition
+      })
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "hint取得失敗");
-      }
+    hintText = data.hint;
+    userId = data.user_id;
 
-      hintText = data.hint;
+    document.getElementById("hint").innerText = hintText;
 
-      document.getElementById("hint").innerText = hintText;
-
-      phase = 1;
-
-    } catch (err) {
-      console.error("hint error:", err);
-      document.getElementById("hint").innerText = "ヒント取得エラー";
-    }
-
+    phase = 1;
     return;
   }
 
-  // 最終回答
+  // 最終回答 → DB更新
   if (phase === 1) {
+
     finalAnswer = input;
+
     document.getElementById("final").innerText = finalAnswer;
+
+    await fetch(`${WORKER_URL}/final`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        finalAnswer,
+        userId
+      })
+    });
+
     phase = 2;
   }
 }
