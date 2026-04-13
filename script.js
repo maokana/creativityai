@@ -1,5 +1,4 @@
-
-const WORKER_URL = ""https://fancy-salad-35ac.kanachenliebe.workers.dev";
+const WORKER_URL = "https://fancy-salad-35ac.kanachenliebe.workers.dev";
 
 let task = "";
 let condition = "";
@@ -33,7 +32,7 @@ async function startTest() {
 
   } catch (err) {
     document.getElementById("task").innerText = "読み込みエラー";
-    console.error(err);
+    console.error("tasks error:", err);
   }
 
   startTimer();
@@ -65,17 +64,14 @@ function endTest() {
 }
 
 // =========================
-// ■ 回答送信（初回→ヒント→最終）
+// ■ 回答送信
 // =========================
 async function submitAnswer() {
 
   const input = document.getElementById("input").value;
-
   if (!input) return;
 
-  // -------------------------
-  // ① 初回回答 → ヒント取得
-  // -------------------------
+  // 初回 → ヒント取得
   if (phase === 0) {
 
     initialAnswer = input;
@@ -83,7 +79,9 @@ async function submitAnswer() {
     try {
       const res = await fetch(`${WORKER_URL}/hint`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           input,
           task,
@@ -91,11 +89,11 @@ async function submitAnswer() {
         })
       });
 
-      if (!res.ok) {
-        throw new Error("hint取得失敗");
-      }
-
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "hint取得失敗");
+      }
 
       hintText = data.hint;
 
@@ -104,27 +102,20 @@ async function submitAnswer() {
       phase = 1;
 
     } catch (err) {
-      console.error(err);
-      document.getElementById("hint").innerText = "エラー：ヒント取得失敗";
+      console.error("hint error:", err);
+      document.getElementById("hint").innerText = "ヒント取得エラー";
     }
 
     return;
   }
 
-  // -------------------------
-  // ② 最終回答
-  // -------------------------
+  // 最終回答
   if (phase === 1) {
-
     finalAnswer = input;
-
     document.getElementById("final").innerText = finalAnswer;
-
     phase = 2;
   }
 }
 
-// =========================
-// ■ 自動開始
-// =========================
+// 自動開始
 startTest();
